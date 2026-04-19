@@ -1,0 +1,3 @@
+Integrante A: Sánchez Oviedo Kiara Nicole - feature/validaciones
+Integrante B: Navarro Hernandez Ana Carolina - feature/mercado-limpieza
+Integrante C: Marin Suarez Haiskel Haicha - feature/estetica-seguridad

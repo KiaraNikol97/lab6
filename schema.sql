@@ -61,3 +61,36 @@ INSERT INTO inventario_pirata (id, nombre_sucio, categoria, precio_finca, priori
 -- ==========================================================
 -- Los únicos IDs que deben generar un Hash al final son el 3 y el 7.
 -- La consulta final debe devolver: hash(ID 3) # hash(ID 7)
+
+-- ==========================================================
+-- CREACIÓN DE FUNCIONES
+-- ==========================================================
+
+-- LLAVE 1: fn_cernidor 
+DELIMITER $$
+
+CREATE FUNCTION fn_cernidor(p_id INT)
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    DECLARE v_es_primo BOOLEAN DEFAULT TRUE;
+    DECLARE v_divisor INT DEFAULT 2;
+
+    IF p_id IS NULL THEN RETURN FALSE; END IF;
+    IF p_id < 2 THEN RETURN FALSE; END IF;
+
+    WHILE v_divisor <= FLOOR(SQRT(p_id)) DO
+        IF p_id % v_divisor = 0 THEN
+            SET v_es_primo = FALSE;
+        END IF;
+        SET v_divisor = v_divisor + 1;
+    END WHILE;
+
+    RETURN v_es_primo;
+END$$
+
+DELIMITER ;
+
+-- PRUEBA UNITARIA (evidencia de ejecución)
+-- SELECT id, fn_cernidor(id) AS es_primo
+-- FROM inventario_pirata;

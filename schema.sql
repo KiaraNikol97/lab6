@@ -66,7 +66,9 @@ INSERT INTO inventario_pirata (id, nombre_sucio, categoria, precio_finca, priori
 -- CREACIÓN DE FUNCIONES
 -- ==========================================================
 
+-- ----------------------------------
 -- LLAVE 1: fn_cernidor 
+-- ----------------------------------
 DELIMITER $$
 
 CREATE FUNCTION fn_cernidor(p_id INT)
@@ -94,3 +96,41 @@ DELIMITER ;
 -- PRUEBA UNITARIA (evidencia de ejecución)
 -- SELECT id, fn_cernidor(id) AS es_primo
 -- FROM inventario_pirata;
+
+-- ----------------------------------
+-- LLAVE 2: fn_reloj_arena
+-- ----------------------------------
+DELIMITER $$
+
+CREATE FUNCTION fn_reloj_arena(p_fecha DATE, p_meses INT)
+RETURNS VARCHAR(10)
+DETERMINISTIC
+BEGIN
+    DECLARE v_fecha_actual    DATE;
+    DECLARE v_fecha_vencimiento DATE;
+
+    IF p_fecha IS NULL OR p_meses IS NULL THEN
+        RETURN 'Expirado';
+    END IF;
+
+    SET v_fecha_actual = CURDATE();
+
+    SET v_fecha_vencimiento = DATE_ADD(p_fecha, INTERVAL p_meses MONTH);
+
+    IF v_fecha_vencimiento > v_fecha_actual THEN
+        RETURN 'Fresco';
+    ELSE
+        RETURN 'Expirado';
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+-- PRUEBA UNITARIA (evidencia de ejecución)
+/* SELECT
+    id,
+    fecha_ingreso,
+    meses_validez,
+    fn_reloj_arena(fecha_ingreso, meses_validez) AS estado
+FROM inventario_pirata; */

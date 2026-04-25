@@ -61,3 +61,73 @@ INSERT INTO inventario_pirata (id, nombre_sucio, categoria, precio_finca, priori
 -- ==========================================================
 -- Los únicos IDs que deben generar un Hash al final son el 3 y el 7.
 -- La consulta final debe devolver: hash(ID 3) # hash(ID 7)
+
+
+
+
+
+
+
+
+
+-- ==========================================================
+-- LLAVES 5, 6 Y 7 - INTEGRANTE C
+-- ==========================================================
+
+-- LLAVE 5: fn_escultor
+CREATE FUNCTION fn_escultor(p_nombre TEXT, p_factor DECIMAL(3,2))
+RETURNS TEXT
+DETERMINISTIC
+BEGIN
+    DECLARE v_texto_transformado TEXT;
+    DECLARE v_sufijo TEXT;
+
+    IF p_factor > 1.0 THEN
+        SET v_texto_transformado = UPPER(p_nombre);
+        SET v_sufijo = '_PREMIUM';
+    ELSE
+        SET v_texto_transformado = LOWER(p_nombre);
+        SET v_sufijo = '_regular';
+    END IF;
+
+    RETURN CONCAT(v_texto_transformado, v_sufijo);
+END;
+
+-- LLAVE 6: fn_notario
+CREATE FUNCTION fn_notario(p_texto TEXT)
+RETURNS TEXT
+DETERMINISTIC
+MODIFIES SQL DATA
+BEGIN
+    DECLARE v_usuario VARCHAR(100);
+    DECLARE v_timestamp DATETIME;
+    DECLARE v_mensaje TEXT;
+
+    SET v_usuario   = CURRENT_USER();
+    SET v_timestamp = NOW();
+    SET v_mensaje   = CONCAT(
+        'PUNTO DE CONTROL - Llave 6 | ',
+        'Texto en pipeline: [', p_texto, '] | ',
+        'Longitud: ', CHAR_LENGTH(p_texto), ' caracteres | ',
+        'Estado: Procesado por Llaves 3, 4 y 5'
+    );
+
+    INSERT INTO logs_hashy (nombre_funcion, fecha_ejecucion, mensaje_accion, usuario_db)
+    VALUES ('fn_notario', v_timestamp, v_mensaje, v_usuario);
+
+    RETURN p_texto;
+END;
+
+-- LLAVE 7: fn_gran_sello
+CREATE FUNCTION fn_gran_sello(p_texto TEXT)
+RETURNS VARCHAR(255)
+DETERMINISTIC
+BEGIN
+    DECLARE v_hash_crudo VARCHAR(64);
+    DECLARE v_sello_final VARCHAR(255);
+
+    SET v_hash_crudo  = SHA2(p_texto, 256);
+    SET v_sello_final = LPAD(v_hash_crudo, 64, '0');
+
+    RETURN v_sello_final;
+END;

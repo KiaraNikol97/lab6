@@ -61,3 +61,57 @@ INSERT INTO inventario_pirata (id, nombre_sucio, categoria, precio_finca, priori
 -- ==========================================================
 -- Los únicos IDs que deben generar un Hash al final son el 3 y el 7.
 -- La consulta final debe devolver: hash(ID 3) # hash(ID 7)
+
+
+
+-- * . °•★|•°∵ ∵°•|☆•° . ** . °•★|•°∵ ∵°•|☆•° . *
+-- IMPLEMENTACIÓN DE LLAVES: INTEGRANTE B (Ana Carolina)
+-- * . °•★|•°∵ ∵°•|☆•° . ** . °•★|•°∵ ∵°•|☆•° . *
+
+DELIMITER //
+
+-- LLAVE 3: El Espía de Tortuga (Tasación de Precios)
+-- Requisitos: Bloque BEGIN/END, 2 variables locales, manejo de nulos.
+CREATE FUNCTION fn_espia_tortuga(p_categoria VARCHAR(100), p_precio_finca DECIMAL(10,2)) 
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+    DECLARE v_promedio_mercado DECIMAL(10,2);
+    DECLARE v_factor_ajuste DECIMAL(10,2);
+
+    
+    SELECT precio_referencia INTO v_promedio_mercado 
+    FROM mercado_negro 
+    WHERE categoria = p_categoria;
+
+    -- manejar nulls
+    IF v_promedio_mercado IS NULL THEN
+        SET v_factor_ajuste = 1.0; -- Si no hay referencia, no se altera el precio
+    ELSEIF p_precio_finca > v_promedio_mercado THEN
+        SET v_factor_ajuste = 1.2; -- 20% de recargo si es más caro que el mercado
+    ELSE
+        SET v_factor_ajuste = 0.8; -- 20% de descuento si es más barato
+    END IF;
+
+    RETURN v_factor_ajuste;
+END //
+
+-- LLAVE 4: El Purificador (Sanitización de Nombres)
+-- Requisitos: Bloque BEGIN/END, 2 variables locales, uso de REGEXP.
+CREATE FUNCTION fn_purificador(p_nombre_sucio VARCHAR(255)) 
+RETURNS VARCHAR(255)
+DETERMINISTIC
+BEGIN
+    DECLARE v_nombre_limpio VARCHAR(255);
+    DECLARE v_resultado_final VARCHAR(255);
+
+    -- Eliminar cualquier carácter que no sea una letra (tildes y ñ)
+    SET v_nombre_limpio = REGEXP_REPLACE(p_nombre_sucio, '[^a-zA-ZáéíóúÁÉÍÓÚñÑ]', '');
+
+    -- espacios en blanco accidentales
+    SET v_resultado_final = TRIM(v_nombre_limpio);
+
+    RETURN v_resultado_final;
+END //
+
+DELIMITER ;

@@ -63,13 +63,6 @@ INSERT INTO inventario_pirata (id, nombre_sucio, categoria, precio_finca, priori
 -- La consulta final debe devolver: hash(ID 3) # hash(ID 7)
 
 
-
-
-
-
-
-
-
 -- ==========================================================
 -- LLAVES 5, 6 Y 7 - INTEGRANTE C
 -- ==========================================================
@@ -93,10 +86,19 @@ BEGIN
     RETURN CONCAT(v_texto_transformado, v_sufijo);
 END;
 
--- LLAVE 6: fn_notario
+-- ===============================================
+-- Llave 06 fn_notario
+-- ===============================================
+
+-- 2. Activar permisos
+SET GLOBAL log_bin_trust_function_creators = 1;
+
+
+DELIMITER $$
+
 CREATE FUNCTION fn_notario(p_texto TEXT)
 RETURNS TEXT
-DETERMINISTIC
+NOT DETERMINISTIC
 MODIFIES SQL DATA
 BEGIN
     DECLARE v_usuario VARCHAR(100);
@@ -116,18 +118,30 @@ BEGIN
     VALUES ('fn_notario', v_timestamp, v_mensaje, v_usuario);
 
     RETURN p_texto;
-END;
+END
 
--- LLAVE 7: fn_gran_sello
+DELIMITER ;
+
+-- Prueba
+SELECT fn_notario('gomitafresa_regular');
+SELECT * FROM logs_hashy;
+-- ===============================================
+-- Llave 07 fn_gran_sello
+-- ===============================================
+USE lab6;
+
+DROP FUNCTION IF EXISTS fn_gran_sello;
+
 CREATE FUNCTION fn_gran_sello(p_texto TEXT)
 RETURNS VARCHAR(255)
 DETERMINISTIC
 BEGIN
-    DECLARE v_hash_crudo VARCHAR(64);
-    DECLARE v_sello_final VARCHAR(255);
+    DECLARE v_hash VARCHAR(255);
+    SET v_hash = SHA2(p_texto, 256);
+    RETURN LPAD(v_hash, 64, '0');
+END
 
-    SET v_hash_crudo  = SHA2(p_texto, 256);
-    SET v_sello_final = LPAD(v_hash_crudo, 64, '0');
+DELIMITER ;
 
-    RETURN v_sello_final;
-END;
+-- Prueba rápida
+SELECT fn_gran_sello('gomitafresa_regular');
